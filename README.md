@@ -107,7 +107,7 @@ $$
 
 The scanner will attempt to find the optimal global fit against an observation of `10.0`, while respecting the bounds and external 2D prior penalties mapped in `config/myconfig.json`.
 
-*Benchmark:* On a standard modern laptop utilizing 4 cores, this default 3-parameter global minimization and profiling sequence completes in approximately ~15 seconds.
+*Benchmark:* On a standard modern laptop (13th Gen Intel(R) Core(TM) i5-1334U, 16 GB RAM) utilizing 12 cores, this example 3-parameter global minimization and profiling sequence completes in approximately ~4.7 seconds, including output file and plot generation (1D scan: 100 points per parameter; 2D scan 400 points total, including repair loops).
 
 ### 4. Outputs
 All execution artifacts are saved to the directory defined by the `--output_dir` flag (defaults to `results/` if unassigned).
