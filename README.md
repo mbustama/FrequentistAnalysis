@@ -155,11 +155,25 @@ The core mathematical objective of the code is minimizing the $\Delta\chi^2$ spa
 * **Continuity Repair**: Evaluates the second derivative of the scanned curves. If a jagged elbow or unphysical slope change is detected, it utilizes a Nelder-Mead simplex polish to bridge the gap.
 * **Gradient Repair**: Fixes unphysical boundary walls by enforcing strict threshold drops relative to physical confidence boundaries.
 
-### Output Files and Plotting
-Outputs are highly modular. 
-* **1D Intervals**: The code uses `UnivariateSpline` to extract roots across the $1\sigma$, $2\sigma$, and $3\sigma$ confidence limits. If `merge_disconnected_islands` is active, it bridges non-continuous limit bounds.
-* **2D Contours**: Using `gaussian_filter`, the raw 2D $N \times N$ matrices are smoothed and projected via `pcolormesh`. 
-If a 1D scan crashes or is intentionally skipped, the plotting algorithm is smart enough to autonomously extract and marginalize a ghost 1D curve from a populated 2D contour grid.
+### Output Files and Plots
+
+Outputs are highly modular and split into raw numerical data (`info/`) and visualizations (`plots/`), allowing users to easily import the arrays for custom post-processing and analysis.
+
+**Raw Data Files (`info/` directory)**
+* **`frequentist_results.json`**: Contains the precise numerical roots for all extracted confidence intervals. 
+  * *Format*: A master dictionary where each key is a scanned parameter name. The value is a nested dictionary containing `"best_fit"` (float), and `"1sigma"`, `"2sigma"`, `"3sigma"` lists. Because topologies can be disconnected, each sigma list contains bounding pairs: `[[min_1, max_1], [min_2, max_2]]`.
+* **`profile_1d_<param>.json`**: The raw computational mesh for a 1D parameter scan.
+  * *Format*: A dictionary containing `"x"` (1D list of the scanned parameter coordinates) and `"y"` (1D list of the absolute minimized $\chi^2$ or $-2 \ln \mathcal{L}$ at each point). If enabled in the config, `"param_hist"` tracks the minimized states of all other nuisance parameters at each step.
+* **`profile_2d_<param_x>_vs_<param_y>.json`**: The raw 2D grid evaluations for a specific parameter pair.
+  * *Format*: A dictionary containing `"x"` (1D list of x-axis grid points), `"y"` (1D list of y-axis grid points), and `"z"` (a 2D matrix representing the absolute $\chi^2$ evaluation surface). If enabled, `"param_grid"` tracks the nuisance variable values across the matrix.
+* **`profile_scan_2d_data.json`**: A master aggregate file consolidating normalized data for every completed 2D pair.
+  * *Format*: A dictionary keyed by `"param_y_vs_param_x"`. Each entry contains the `"x"`, `"y"`, and normalized `"z"` ($\Delta\chi^2$) grids ready for direct injection into custom `matplotlib` or `seaborn` contour plotting scripts.
+
+**Visualizations (`plots/` directory)**
+* **`frequentist_summary_1d.pdf`**: A multi-panel grid plotting the 1D $\Delta\chi^2$ curve for every scanned parameter. The y-axis represents the normalized $\Delta\chi^2$ offset from the global minimum. The code uses `UnivariateSpline` to extract roots across the $1\sigma$, $2\sigma$, and $3\sigma$ limits (denoted by horizontal dashed/dotted lines). If `merge_disconnected_islands` is active, it bridges non-continuous limit bounds. The subplot titles automatically format the best-fit values with their asymmetric $+/-$ uncertainties.
+* **`frequentist_corner_2d.pdf`**: A nested, multi-dimensional corner plot mapping the entire phase space. 
+  * *Diagonal panels* show the 1D marginalized profiles. If a 1D scan crashes or is intentionally skipped, the plotting algorithm is smart enough to autonomously extract and marginalize a ghost 1D curve from a populated 2D contour grid.
+  * *Off-diagonal panels* show the 2D topological contours. Using `gaussian_filter`, the raw 2D $N \times N$ matrices are smoothed and projected via `pcolormesh`. Contour lines and colored shading explicitly map the 2-Degree-of-Freedom confidence thresholds ($1\sigma_{2D}$, $2\sigma_{2D}$, $3\sigma_{2D}$).
 
 ---
 
