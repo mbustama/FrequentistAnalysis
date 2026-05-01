@@ -16,6 +16,36 @@ This codebase minimizes $-2 \ln \mathcal{L}$ (or $\Delta\chi^2$) objective funct
 
 ---
 
+## Table of contents
+* [Salient Features](#salient-features)
+* [Quick Start](#quick-start)
+  * [1. Execution](#1-execution)
+  * [2. Help Menu & Flags](#2-help-menu--flags)
+  * [3. The Built-In Example](#3-the-built-in-example)
+  * [4. Outputs](#4-outputs)
+* [File Structure](#file-structure)
+* [Dependencies](#dependencies)
+* [The Analysis Workflow](#the-analysis-workflow)
+  * [Likelihood Function](#likelihood-function)
+  * [Repairs](#repairs)
+  * [Output Files and Plotting](#output-files-and-plotting)
+* [Adapting the code to your project](#adapting-the-code-to-your-project)
+* [Setting Parameters](#setting-parameters)
+* [The Config File](#the-config-file)
+  * [Contents](#contents)
+  * [Writing your own config file](#writing-your-own-config-file)
+* [Useful Recipes](#useful-recipes)
+  * [Only perform 1D Scans](#only-perform-1d-scans)
+  * [Only perform 2D Scans](#only-perform-2d-scans)
+  * [My code is taking too long in the repairs](#my-code-is-taking-too-long-in-the-repairs)
+  * [Smoothening Marginalized Results](#smoothening-marginalized-results)
+  * [Avoiding Local Minimum Traps](#avoiding-local-minimum-traps)
+  * [Asimov Sensitivities](#asimov-sensitivities)
+  * [Changing the number of cores](#changing-the-number-of-cores)
+* [Authorship and License](#authorship-and-license)
+
+---
+
 ## Quick Start
 
 ### 1. Execution
@@ -31,7 +61,7 @@ python -m src.main -h
 ```
 
 ### 3. The Built-In Example
-The framework ships with a lightweight, 3-parameter physics kernel located in `src/physics/kernel.py`: 
+The framework ships with an example lightweight, 3-parameter physics kernel located in `src/physics/kernel.py`: 
 
 $$
 f(\alpha, \beta, \gamma) = \alpha^2 + 2\beta - \sin(\gamma) + \sum(\text{static data})
@@ -372,6 +402,13 @@ If you are generating expected sensitivity projections rather than fitting again
 ```bash
 python -m src.main --config_file myconfig.json --asimov
 ```
+
+### Changing the number of cores
+By default, the code requests 64 cores, but automatically checks hardware limits. You can explicitly set the number of cores requested for the multiprocessing pool either in your configuration file (`"num_cores": 16` under `"scan_settings"`) or via the CLI:
+```bash
+python -m src.main --config_file myconfig.json --num_cores 16
+```
+**Internal Adaptation & SLURM:** The framework includes built-in safeguards to prevent requesting more cores than the hardware or cluster scheduler actually allows. Internally, the code checks the OS affinity mask (`os.sched_getaffinity`) and evaluates SLURM environment variables (like `$SLURM_CPUS_PER_TASK`). It then takes the *minimum* between your requested `--num_cores` and the actual hardware/SLURM limits available to the job. This ensures that your runs won't crash or be penalized by the cluster for attempting to spawn threads outside of your allocated resources.
 
 ---
 
