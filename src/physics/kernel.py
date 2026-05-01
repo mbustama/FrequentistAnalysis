@@ -48,7 +48,7 @@ def get_label(param):
 
 def format_title_stats(param, results_dict):
     """
-    Parses frequentist extracted limits and formats them dynamically into LaTeX strings
+    Parses frequentist extracted limits and format them dynamically into LaTeX strings
     used for matplotlib sub-plot titles.
 
     Parameters:
@@ -66,7 +66,6 @@ def format_title_stats(param, results_dict):
     intervals = res.get('1sigma')
     if not intervals or len(intervals) == 0: return rf"${base_label} = {bf:.3g}$"
     
-    # Isolate the explicit interval island containing the best fit point
     target_interval = intervals[0]
     for interval in intervals:
         if interval[0] <= bf <= interval[1]:
@@ -76,7 +75,6 @@ def format_title_stats(param, results_dict):
     return rf"${base_label} = {bf:.3g}_{{-{bf - low:.3g}}}^{{+{high - bf:.3g}}}$"
 
 # USER MODIFICATION REQUIRED HERE: Replace this function content with your actual physical model.
-# [Fix #2]: Array passing ensures stable C-compilation without JIT unpacking errors.
 @njit
 def compute_user_model_single(params, static_data):
     """

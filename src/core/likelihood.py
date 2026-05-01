@@ -69,7 +69,7 @@ class GenericLikelihoodWrapper:
         self.fixed_params_cfg = config.get('fixed_params', {})
         self.use_fuzzy_cache = config.get("scan_settings", {}).get("use_fuzzy_cache", False)
         
-        # [Fix #3]: MCMC Memory Guard Toggle
+        # MCMC Memory Guard Toggle
         self._cache = {}
         self._cache_enabled = True
         
@@ -79,9 +79,17 @@ class GenericLikelihoodWrapper:
             if asimov_injections:
                 print(f"  [Asimov] Injecting null-hypothesis parameters: {asimov_injections}")
             
+            # Simulated data override
             self.static_data = np.zeros(10, dtype=np.float64) 
+            
+            # Replace empty assumptions by computing the true target payload using the injected parameters.
+            mock_args = [asimov_injections.get(p, self.fixed_params_cfg.get(p, 0.0)) for p in self.all_params]
+            mock_args.append(self.static_data)
+            self.observed_data = compute_user_model_single(np.array(mock_args[:-1]), self.static_data)
+            print(f"  [Asimov] Mock expectation initialized at: {self.observed_data:.4f}")
         else:
             self.static_data = np.ones(10, dtype=np.float64) 
+            self.observed_data = 10.0 # Default fixed observation for real data mode
         
         self._build_prior_interpolators()
         
@@ -193,18 +201,18 @@ class GenericLikelihoodWrapper:
         if self.use_fuzzy_cache: cache_key = tuple(round(x, 5) for x in args)
         else: cache_key = tuple(args)
             
-        # [Fix #3]: Conditional MCMC cache evaluation
+        # Conditional Memory Check
         if self._cache_enabled and cache_key in self._cache: return self._cache[cache_key]
         vals = dict(zip(self.param_names, args))
         
-        # [Fix #2]: Array passing constructs stable signature for Numba
+        # Unpack floating coordinates in strict order sequence expected by compiler.
         model_args = [self._get_val(vals, p) for p in self.all_params]
         p_arr = np.array([val if val is not None else 0.0 for val in model_args], dtype=np.float64)
         
         try: model_prediction = compute_user_model_single(p_arr, self.static_data)
         except Exception: return 1e9 
             
-        chi2_data = abs(model_prediction - 10.0) 
+        chi2_data = abs(model_prediction - self.observed_data) 
         if np.isnan(chi2_data) or np.isinf(chi2_data): chi2_data = 1e9
 
         chi2_prior = self._compute_prior_penalty(vals)
@@ -213,6 +221,6 @@ class GenericLikelihoodWrapper:
         total_chi2 = chi2_data + chi2_prior
         if np.isnan(total_chi2) or np.isinf(total_chi2): total_chi2 = 1e9
         
-        # [Fix #3]: Prevents Out-Of-Memory leaks during randomized walks
+        # Save evaluation to tracking dictionary only if toggle allows it.
         if self._cache_enabled: self._cache[cache_key] = total_chi2
         return total_chi2
