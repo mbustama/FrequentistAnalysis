@@ -1,6 +1,7 @@
 {
     "_comment_global": "Master config for generic frequentist profile likelihood scan.",
     "experiment": "generic_project_name",
+    "output_dir": "../results/",
     
     "_comment_scan_settings": "Core configuration for 1D and 2D profile likelihood execution.",
     "scan_settings": {
@@ -41,11 +42,11 @@
         "_comment_use_fuzzy_cache": "If true, rounds objective function inputs slightly to maximize cache hit rates.",
         "use_fuzzy_cache": false,
         "_comment_log_scan_parameters": "List of variables that should use geometric (logarithmic) spacing during 1D scans to resolve bounds near 0.",
-        "log_scan_parameters": ["param1"],
+        "log_scan_parameters": [],
         "_comment_target_subset_1d": "If defined, ONLY these parameters will be processed during the 1D scan loop.",
         "target_subset_1d": [],
         "_comment_target_subset_2d": "If defined, ONLY pairs within this list will be processed during the 2D scan loop.",
-        "target_subset_2d": ["param1", "param2"],
+        "target_subset_2d": [],
         "_comment_clip_contour_smearing": "If true, clips massive delta-chi2 values before gaussian smoothing to prevent contour distortion.",
         "clip_contour_smearing": false,
         "_comment_smooth_marginalized_1d": "If true, uses spline interpolation to smooth out the jagged 1D curves marginalized from 2D contour grids.",
@@ -123,7 +124,11 @@
     
     "_comment_confidence": "Delta chi2 thresholds used to draw boundaries on the 1D and 2D plots.",
     "confidence_thresholds": {
-        "1sigma": 1.0, "2sigma": 4.0, "3sigma": 9.0,
-        "1sigma_2d": 2.30, "2sigma_2d": 4.61, "3sigma_2d": 11.83
+        "1sigma": 1.0, 
+        "2sigma": 4.0, 
+        "3sigma": 9.0,
+        "1sigma_2d": 2.30, 
+        "2sigma_2d": 4.61, 
+        "3sigma_2d": 11.83
     }
 }
