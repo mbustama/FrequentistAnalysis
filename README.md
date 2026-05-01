@@ -81,10 +81,10 @@ All execution artifacts are saved to the directory defined by the `--output_dir`
 * **`results/plots/`**: Contains publication-ready `.pdf` graphics.
 
 **Example 1D Profiling Summary:**
-![1D Profile Summary](assets/frequentist_summary_1d.png)
+![1D Profile Summary](assets/frequentist_summary_1d.jpg)
 
 **Example 2D Contour Corner Plot:**
-![2D Corner Plot](assets/frequentist_corner_2d.png)
+![2D Corner Plot](assets/frequentist_corner_2d.jpg)
 
 ---
 
