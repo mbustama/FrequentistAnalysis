@@ -25,138 +25,13 @@ Core Optimizations Included:
 - Static Data Injection passing array payloads directly into Numba-compiled kernels.
 - Rigid Bound Forcing to override dynamic sigma scaling during grid construction.
 
-Configuration File (JSON) Format Expectation:
-{
-    "_comment_global": "Master config for generic frequentist profile likelihood scan.",
-    "experiment": "generic_project_name",
-    
-    "_comment_scan_settings": "Core configuration for 1D and 2D profile likelihood execution.",
-    "scan_settings": {
-        "_comment_num_cores": "Explicit override for multiprocessing CPU cores.",
-        "num_cores": 64,
-        "_comment_use_checkpointing": "If true, skips parameters with existing json files in the info directory.",
-        "use_checkpointing": true,
-        "_comment_skip_sanity_check": "If true, bypasses the initial 10% parameter perturbation test.",
-        "skip_sanity_check": false,
-        "_comment_merge_disconnected_islands": "If true, treats disjoint 1D limits as continuous if the delta-chi2 gap is small.",
-        "merge_disconnected_islands": true,
-        "_comment_island_merge_tolerance": "Delta-chi2 threshold allowed when bridging disjoint parameter islands.",
-        "island_merge_tolerance": 0.1,
-        "_comment_enforce_spline_monotonicity": "If true, explicitly sorts X arrays before interval extraction to prevent UnivariateSpline crashes on reversed bounds.",
-        "enforce_spline_monotonicity": false,
-        "_comment_n_steps": "Number of final interpolated grid points for 1D parameter profile scans.",
-        "n_steps": 40,
-        "_comment_scan_range_sigma": "How far to scan left/right of the minimum in units of parameter sigma/error.",
-        "scan_range_sigma": 4.0,
-        "_comment_force_rigid_bounds": "If true, 1D/2D scans ignore local sigma and strictly scan absolute parameter_limits.",
-        "force_rigid_bounds": false,
-        "_comment_use_n_points_internal": "Adaptive Mesh Refinement. If true, evaluates n_points_internal and interpolates to n_steps.",
-        "use_n_points_internal": true,
-        "_comment_n_points_internal": "Number of coarse internal points to calculate before PCHIP interpolation.",
-        "n_points_internal": 100,
-        "_comment_scan_2d": "If true, performs nested 2D contour profile scans after 1D scans finish.",
-        "scan_2d": true,
-        "_comment_scan_2d_only": "If true, completely skips 1D scans and ONLY runs 2D scans.",
-        "scan_2d_only": false,
-        "_comment_n_steps_2d": "Grid resolution strictly for 2D profile contour mapping.",
-        "n_steps_2d": 20,
-        "_comment_scan_range_sigma_2d": "How far to scan left/right of the minimum during 2D profiling.",
-        "scan_range_sigma_2d": 3.5,
-        "_comment_use_explicit_step_sizes": "If true, Minuit uses the 'step_sizes' block to initialize gradient derivatives.",
-        "use_explicit_step_sizes": true,
-        "_comment_use_linear_interp": "If true, uses linear interpolation for 1D prior files instead of PCHIP cubic splines.",
-        "use_linear_interp": false,
-        "_comment_use_fuzzy_cache": "If true, rounds objective function inputs slightly to maximize cache hit rates.",
-        "use_fuzzy_cache": false,
-        "_comment_log_scan_parameters": "List of variables that should use geometric (logarithmic) spacing during 1D scans to resolve bounds near 0.",
-        "log_scan_parameters": ["param1"],
-        "_comment_target_subset_1d": "If defined, ONLY these parameters will be processed during the 1D scan loop.",
-        "target_subset_1d": [],
-        "_comment_target_subset_2d": "If defined, ONLY pairs within this list will be processed during the 2D scan loop.",
-        "target_subset_2d": ["param1", "param2"],
-        "_comment_clip_contour_smearing": "If true, clips massive delta-chi2 values before gaussian smoothing to prevent contour distortion.",
-        "clip_contour_smearing": false,
-        "_comment_smooth_marginalized_1d": "If true, uses spline interpolation to smooth out the jagged 1D curves marginalized from 2D contour grids.",
-        "smooth_marginalized_1d": false,
-        "_comment_save_nuisance_evolution": "If true, explicitly formats and saves parameter evolution tracks for diagnostic plotting.",
-        "save_nuisance_evolution": false
-    },
-    
-    "_comment_repair": "Settings for the topological defect repair loops.",
-    "repair_settings": {
-        "_comment_disable_outlier_repair": "If true, disables all outlier, continuity, and gradient repair loops.",
-        "disable_outlier_repair": false,
-        "_comment_use_simplex_polish": "If true, runs Nelder-Mead simplex prior to migrad gradient descent during a repair.",
-        "use_simplex_polish": true,
-        "_comment_minuit_retries": "Number of times to kick a stuck parameter with gaussian random noise before failing.",
-        "minuit_retries": 3,
-        "_comment_spike_threshold": "Delta-chi2 jump magnitude required to classify a point as an isolated spike.",
-        "spike_threshold": 0.2,
-        "_comment_continuity_threshold": "Magnitude of slope change required to flag and repair a second-derivative discontinuity.",
-        "continuity_threshold": 1.0,
-        "_comment_gradient_threshold": "Delta-chi2 drop required to flag an unphysical gradient cliff.",
-        "gradient_threshold": 50.0,
-        "_comment_max_repair_passes": "Maximum number of times the repair loop will sweep the grid to clear cascading spikes.",
-        "max_repair_passes": 10
-    },
-    
-    "_comment_steps": "Initial step sizes Minuit uses to calculate gradients.",
-    "step_sizes": {
-        "param1": 0.01,
-        "param2": 0.1
-    },
-    
-    "_comment_limits": "Hard mathematical walls Minuit cannot cross.",
-    "parameter_limits": {
-        "param1": [-10.0, 10.0],
-        "param2": [0.0, 100.0]
-    },
-    
-    "_comment_fixed": "Parameters locked permanently in place.",
-    "fixed_params": {
-        "param3": 1.5,
-        "param4": [90.0, "degrees"]
-    },
-    
-    "_comment_starts": "Initial guesses for floating parameters.",
-    "start_values": {
-        "param1": 0.0,
-        "param2": 5.0
-    },
-    
-    "_comment_fallbacks": "Gaussian penalty priors applied to parameters not restricted by an input file.",
-    "fallbacks": {
-        "param1": ["gauss", 0.0, 1.0],
-        "param4": ["gauss", 180.0, 15.0, "degrees"]
-    },
-    
-    "_comment_coupled_priors": "Define multi-parameter penalties here or implement in _compute_user_coupled_priors.",
-    "coupled_priors": {},
-    
-    "_comment_asimov": "Parameter overrides used exclusively to generate the mock null-hypothesis when --asimov is active.",
-    "asimov_injections": {
-        "param1": 0.0
-    },
-    
-    "_comment_inputs": "Paths to 1D/2D chi2 grid files to act as dynamic prior penalties.",
-    "input_configs": [
-        {
-            "file": "prior_data/example_2d_prior.txt",
-            "type": "2D",
-            "params": ["param1", "param4"],
-            "units": ["none", "degrees"]
-        }
-    ],
-    "use_quadratic_fallback": false,
-    
-    "_comment_confidence": "Delta chi2 thresholds used to draw boundaries on the 1D and 2D plots.",
-    "confidence_thresholds": {
-        "1sigma": 1.0, "2sigma": 4.0, "3sigma": 9.0,
-        "1sigma_2d": 2.30, "2sigma_2d": 4.61, "3sigma_2d": 11.83
-    }
-}
+Order of Priority for Execution Parameters:
+1. Command Line Interface (CLI) Arguments (Highest Priority)
+2. JSON Configuration File
+3. Default Fallbacks (Lowest Priority)
 
 USER INSTRUCTIONS FOR NEW PROJECTS:
+Look for comments tagged with "USER MODIFICATION REQUIRED HERE" throughout the code.
 1. Update `LATEX_LABELS` with your new parameter names.
 2. Replace `compute_user_model_single` with your actual fast physics/math kernel.
 3. Update `GenericLikelihoodWrapper` to load any project-specific data (e.g., flux tables, detector responses).
@@ -179,6 +54,7 @@ from scipy.ndimage import gaussian_filter
 # ==============================================================================
 # 1. HPC CONFIGURATION & DEADLOCK PREVENTION
 # ==============================================================================
+# Disables implicitly nested parallelization in underlying C libraries to prevent node locking.
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -196,6 +72,7 @@ except ImportError:
     NUMBA_AVAILABLE = False
     print("Numba is not installed. Falling back to standard Python execution.")
     def njit(*args, **kwargs):
+        """Dummy decorator for systems lacking Numba. Preserves code functionality."""
         def decorator(func):
             return func
         if len(args) == 1 and callable(args[0]):
@@ -203,10 +80,64 @@ except ImportError:
         return decorator
 
 # ==============================================================================
+# GLOBAL DEFAULT CONFIGURATIONS (CLI EXPOSURE)
+# ==============================================================================
+# These dictionaries define the standard default behavior of the script, enabling
+# dynamic loading into the ArgParse menu for full CLI user control.
+
+DEFAULT_SCAN_SETTINGS = {
+    "num_cores": 64,
+    "use_checkpointing": True,
+    "skip_sanity_check": False,
+    "merge_disconnected_islands": True,
+    "island_merge_tolerance": 0.1,
+    "enforce_spline_monotonicity": False,
+    "n_steps": 40,
+    "scan_range_sigma": 4.0,
+    "force_rigid_bounds": False,
+    "use_n_points_internal": True,
+    "n_points_internal": 100,
+    "scan_2d": True,
+    "scan_2d_only": False,
+    "n_steps_2d": 20,
+    "scan_range_sigma_2d": 3.5,
+    "use_explicit_step_sizes": True,
+    "use_linear_interp": False,
+    "use_fuzzy_cache": False,
+    "clip_contour_smearing": False,
+    "smooth_marginalized_1d": False,
+    "save_nuisance_evolution": False,
+    "log_scan_parameters": [],
+    "target_subset_1d": [],
+    "target_subset_2d": []
+}
+
+DEFAULT_REPAIR_SETTINGS = {
+    "disable_outlier_repair": False,
+    "use_simplex_polish": True,
+    "minuit_retries": 3,
+    "spike_threshold": 0.2,
+    "continuity_threshold": 1.0,
+    "gradient_threshold": 50.0,
+    "max_repair_passes": 10
+}
+
+# ==============================================================================
 # 3. HELPER: PRIOR FILE LOADING & CONFIG PARSING
 # ==============================================================================
 
 def load_and_grid_2d(filename):
+    """
+    Loads empirical 2D array coordinates and maps them onto a uniform, sorted grid
+    for use in SciPy's RegularGridInterpolator.
+
+    Parameters:
+    - filename (str): Path to a 3-column text file (param1, param2, delta-chi2).
+
+    Returns:
+    - tuple: (unique param1 values, unique param2 values, structured chi2 grid)
+             Returns (None, None, None) if the file cannot be accessed.
+    """
     try: data = np.loadtxt(filename)
     except Exception as e:
         print(f"  [Prior Error] Could not load {filename}: {e}")
@@ -223,13 +154,32 @@ def load_and_grid_2d(filename):
     return u_p1, u_p2, grid_chi2
 
 class PchipBoundsWrapper:
-    def __init__(self, pchip_func): self.pchip = pchip_func
+    """
+    Picklable wrapper class for SciPy's PchipInterpolator to handle out-of-bounds 
+    errors consistently without relying on lambda closures, ensuring safe HPC multiprocessing.
+    """
+    def __init__(self, pchip_func): 
+        self.pchip = pchip_func
+    
     def __call__(self, x):
         val = self.pchip(x)
         if np.isnan(val): raise ValueError("Out of bounds")
         return val
 
 def load_config(config_path):
+    """
+    Loads JSON configuration files, strips metadata comment lines, and executes 
+    angular unit conversions on bounded variables.
+
+    Parameters:
+    - config_path (str): Filepath to the active JSON config.
+
+    Returns:
+    - dict: Cleaned and processed configuration dictionary.
+    """
+    if not config_path or not os.path.exists(config_path):
+        return {}
+        
     with open(config_path, 'r') as f:
         config = json.load(f)
         
@@ -242,6 +192,7 @@ def load_config(config_path):
         
     config = strip_comments(config)
     
+    # Process mathematical unit scaling (e.g. converting explicit degrees to radians)
     raw_fixed = config.get('fixed_params', {})
     processed_fixed = {}
     for param, val_entry in raw_fixed.items():
@@ -259,6 +210,7 @@ def load_config(config_path):
 # 4. USER IMPLEMENTATION DOMAIN (PHYSICS / MATH KERNELS)
 # ==============================================================================
 
+# USER MODIFICATION REQUIRED HERE: Update parameter dictionary with real project variable names
 LATEX_LABELS = {
     "param1": r"\alpha",
     "param2": r"\beta",
@@ -266,10 +218,22 @@ LATEX_LABELS = {
 }
 
 def get_label(param):
+    """Fetches LaTeX labels for plotting, parsing internal underscores if unassigned."""
     base_label = LATEX_LABELS.get(param, param.replace('_', r'\_'))
     return rf"${base_label}$"
 
 def format_title_stats(param, results_dict):
+    """
+    Parses frequentist extracted limits and format them dynamically into LaTeX strings
+    used for matplotlib sub-plot titles.
+
+    Parameters:
+    - param (str): Target physics parameter name.
+    - results_dict (dict): The active frequentist_results.json block.
+
+    Returns:
+    - str: A formatted LaTeX title (e.g. \beta = 0.5 +0.1 -0.2).
+    """
     base_label = LATEX_LABELS.get(param, param.replace('_', r'\_'))
     if param not in results_dict: return rf"${base_label}$"
     res = results_dict[param]
@@ -278,6 +242,7 @@ def format_title_stats(param, results_dict):
     intervals = res.get('1sigma')
     if not intervals or len(intervals) == 0: return rf"${base_label} = {bf:.3g}$"
     
+    # Isolate the explicit interval island containing the best fit point
     target_interval = intervals[0]
     for interval in intervals:
         if interval[0] <= bf <= interval[1]:
@@ -286,23 +251,43 @@ def format_title_stats(param, results_dict):
     low, high = target_interval
     return rf"${base_label} = {bf:.3g}_{{-{bf - low:.3g}}}^{{+{high - bf:.3g}}}$"
 
-# [Fix #4: Numba Compilation Overhead] Using cache=True ensures the compiled C binary 
-# is saved to disk, drastically speeding up subsequent runs of the same script.
-@njit(cache=True)
+# USER MODIFICATION REQUIRED HERE: Replace this function content with your actual physical model.
+@njit
 def compute_user_model_single(p1, p2, p3, static_data):
+    """
+    Numba JIT-compiled mathematical kernel. This executes the heavy-lifting simulation physics.
+    
+    Parameters:
+    - p1, p2, p3: Numerical values evaluating active coordinate space.
+    - static_data: Immutable data block (e.g., bin distributions, energy weights).
+
+    Returns:
+    - float: Absolute theoretical output mapped to target observation.
+    """
     return (p1**2) + (p2 * 2.0) - np.sin(p3) + np.sum(static_data)
 
 class GenericLikelihoodWrapper:
+    """
+    State-machine encapsulating parameter evaluation. Acts as a bridge transferring 
+    dynamic variables mapped by Minuit/Emcee into the isolated Numba physics kernel.
+    """
     def __init__(self, config, param_names, asimov=False):
+        """
+        Initializes the log-likelihood environment, cache management, and data structures.
+        """
         self.config = config
         self.param_names = param_names
-        
         self.asimov = asimov
+        
+        # USER MODIFICATION REQUIRED HERE: Update array with EXACT variable order the math kernel requires.
         self.all_params = ['param1', 'param2', 'param3'] 
         
         self.fixed_params_cfg = config.get('fixed_params', {})
         self.use_fuzzy_cache = config.get("scan_settings", {}).get("use_fuzzy_cache", False)
+        
+        # MCMC Memory Guard Toggle
         self._cache = {}
+        self._cache_enabled = True
         
         if self.asimov:
             print("  [Asimov] Mode activated. Generating mock expected data...")
@@ -310,17 +295,30 @@ class GenericLikelihoodWrapper:
             if asimov_injections:
                 print(f"  [Asimov] Injecting null-hypothesis parameters: {asimov_injections}")
             
+            # Simulated data override
             self.static_data = np.zeros(10, dtype=np.float64) 
+            
+            # Replace empty assumptions by computing the true target payload using the injected parameters.
+            mock_args = [asimov_injections.get(p, self.fixed_params_cfg.get(p, 0.0)) for p in self.all_params]
+            mock_args.append(self.static_data)
+            self.observed_data = compute_user_model_single(*mock_args)
+            print(f"  [Asimov] Mock expectation initialized at: {self.observed_data:.4f}")
         else:
             self.static_data = np.ones(10, dtype=np.float64) 
+            self.observed_data = 10.0 # Default fixed observation for real data mode
         
         self._build_prior_interpolators()
         
     def _get_val(self, vals, key):
+        """Fetches dynamic floating values or static pinned values uniformly."""
         if key in vals: return vals[key]
         return self.fixed_params_cfg.get(key)
         
     def _build_prior_interpolators(self):
+        """
+        Automatically ingests external empirical chi2 datafiles specified in JSON, 
+        compiling them into active regular grids or cubic splines.
+        """
         self.prior_interpolators = []
         self.covered_params = set()
         input_configs = self.config.get('input_configs', [])
@@ -356,6 +354,7 @@ class GenericLikelihoodWrapper:
                 except Exception as e: print(f"  [Prior Error] Loading 2D {fname}: {e}")
 
     def _calculate_gaussian_fallback(self, param_name, val):
+        """Computes quadratic penalties for parameters without empirical constraints."""
         fallbacks = self.config.get('fallbacks', {})
         if param_name in fallbacks:
             spec = fallbacks[param_name]
@@ -371,10 +370,12 @@ class GenericLikelihoodWrapper:
         return 0.0
 
     def _compute_user_coupled_priors(self, vals):
+        """User injection hook for mathematical multi-variable priors (e.g., bounds constraints)."""
         penalty = 0.0
         return penalty
 
     def _compute_prior_penalty(self, vals):
+        """Aggregates active 1D/2D empirical constraints and fallback penalties."""
         penalty = 0.0
         for prior in self.prior_interpolators:
             p_vals = []
@@ -382,15 +383,13 @@ class GenericLikelihoodWrapper:
                 val = self._get_val(vals, p)
                 if val is None: break
                 
+                # Execute unit transformation dynamically
                 units = prior.get('units', [])
                 if idx < len(units):
                     unit_str = str(units[idx]).lower()
-                    if 'degree' in unit_str:
-                        val = np.degrees(val)
-                    elif 'log10' in unit_str:
-                        val = np.log10(np.abs(val) + 1e-30)
-                    elif '1e-3' in unit_str:
-                        val = np.abs(val) * 1e3
+                    if 'degree' in unit_str: val = np.degrees(val)
+                    elif 'log10' in unit_str: val = np.log10(np.abs(val) + 1e-30)
+                    elif '1e-3' in unit_str: val = np.abs(val) * 1e3
                 p_vals.append(val)
                 
             if len(p_vals) != len(prior['params']): continue
@@ -412,21 +411,26 @@ class GenericLikelihoodWrapper:
         return penalty
 
     def __call__(self, *args):
+        """
+        The objective function invoked directly by Minuit gradient algorithms and MCMC samplers.
+        Validates the math space and safely rejects infinities.
+        """
         if self.use_fuzzy_cache: cache_key = tuple(round(x, 5) for x in args)
         else: cache_key = tuple(args)
             
-        if cache_key in self._cache: return self._cache[cache_key]
+        # Conditional Memory Check
+        if self._cache_enabled and cache_key in self._cache: return self._cache[cache_key]
         vals = dict(zip(self.param_names, args))
         
+        # Unpack floating coordinates in strict order sequence expected by compiler.
         model_args = [self._get_val(vals, p) for p in self.all_params]
         model_args = [val if val is not None else 0.0 for val in model_args]
-        
         model_args.append(self.static_data)
         
         try: model_prediction = compute_user_model_single(*model_args)
         except Exception: return 1e9 
             
-        chi2_data = abs(model_prediction - 10.0) 
+        chi2_data = abs(model_prediction - self.observed_data) 
         if np.isnan(chi2_data) or np.isinf(chi2_data): chi2_data = 1e9
 
         chi2_prior = self._compute_prior_penalty(vals)
@@ -435,7 +439,8 @@ class GenericLikelihoodWrapper:
         total_chi2 = chi2_data + chi2_prior
         if np.isnan(total_chi2) or np.isinf(total_chi2): total_chi2 = 1e9
         
-        self._cache[cache_key] = total_chi2
+        # Save evaluation to tracking dictionary only if toggle allows it.
+        if self._cache_enabled: self._cache[cache_key] = total_chi2
         return total_chi2
 
 # ==============================================================================
@@ -443,11 +448,13 @@ class GenericLikelihoodWrapper:
 # ==============================================================================
 
 def estimate_param_names(config):
+    """Filters floating variables from user-assigned fixed parameters."""
     potential_params = ['param1', 'param2', 'param3'] 
     fixed_params = config.get('fixed_params', {})
     return [p for p in potential_params if p not in fixed_params]
 
 def estimate_start_values(param_names, config):
+    """Determines safe optimization origin points utilizing available boundaries and overrides."""
     starts = {}
     limits = config.get('parameter_limits', {})
     fallbacks = config.get('fallbacks', {})
@@ -466,6 +473,7 @@ def estimate_start_values(param_names, config):
     return starts
 
 class MCMCLikelihoodWrapper:
+    """Isolates the parameter bounds checking sequence for strict MCMC probability generation."""
     def __init__(self, func, limits):
         self.func = func
         self.limits = limits
@@ -482,6 +490,10 @@ class MCMCLikelihoodWrapper:
         return -0.5 * chi2
 
 def run_mcmc_warm_start(func, param_names, start_values, limits_dict, pool=None):
+    """
+    Executes a high-density Emcee randomized stochastic walk to discover the 
+    global minimum basin within highly complex multi-valley phase topologies.
+    """
     try: import emcee
     except ImportError:
         print("  [Warning] 'emcee' missing. Bypassing MCMC warm start.")
@@ -511,7 +523,17 @@ def run_mcmc_warm_start(func, param_names, start_values, limits_dict, pool=None)
         pos.append(p_pos)
         
     sampler = emcee.EnsembleSampler(n_walkers, ndim, log_prob_func, pool=pool)
+    
+    # Actively bypass evaluation caching during high-iteration continuous random generation
+    # to safeguard computational node limits from RAM leaks.
+    print("  [MCMC] Disabling internal wrapper cache to prevent RAM exhaustion...")
+    func._cache_enabled = False
+    
     sampler.run_mcmc(pos, n_steps, progress=True)
+    
+    # Ensure memory traces are entirely scrubbed before enabling component scanning.
+    func._cache.clear()
+    func._cache_enabled = True
     
     flat_samples = sampler.get_chain(flat=True)
     best_idx = np.argmax(sampler.get_log_prob(flat=True))
@@ -522,6 +544,10 @@ def run_mcmc_warm_start(func, param_names, start_values, limits_dict, pool=None)
 # ==============================================================================
 
 def perform_sanity_check(func, m):
+    """
+    Identifies completely isolated or physically unlinked model parameters by executing
+    microscopic permutations against current Minuit bounds structures.
+    """
     print("\n" + "="*60 + "\nSANITY CHECK: Verifying Parameter Connectivity\n" + "="*60)
     base_chi2 = m.fval
     params = m.parameters
@@ -562,6 +588,10 @@ def perform_sanity_check(func, m):
     else: print("All parameters are connected. Proceeding to Scan.\n")
 
 def minimize_point(val, param_name, global_start_values, global_errors, func, limits, param_names, use_simplex=False, minuit_retries=3):
+    """
+    Executes an isolated 1D profile sequence locking the specific parameter array slice, 
+    permitting gradients to optimize secondary components dynamically.
+    """
     np.random.seed(int.from_bytes(os.urandom(4), byteorder='little'))
     final_best_fval = np.inf
     final_best_params = {}
@@ -605,6 +635,7 @@ def minimize_point(val, param_name, global_start_values, global_errors, func, li
     return (final_best_fval, final_best_params) if final_best_fval < np.inf else (np.inf, {})
 
 def minimize_point_2d(val_pair, name_pair, global_start_values, global_errors, func, limits, param_names, use_simplex=False, minuit_retries=3):
+    """Executes isolated parameter minimization pinning exactly two structural array dimensions."""
     np.random.seed(int.from_bytes(os.urandom(4), byteorder='little'))
     val_x, val_y = val_pair
     name_x, name_y = name_pair
@@ -667,17 +698,20 @@ def minimize_point_2d(val_pair, name_pair, global_start_values, global_errors, f
     return (final_best_fval, final_best_params) if final_best_fval < np.inf else (np.inf, {})
 
 def _global_1d_scan_wrapper(task_args):
+    """Exposes 1D tasks for generic mapping functions safely avoiding partial closures."""
     return minimize_point(*task_args)
 
 def _global_2d_scan_wrapper(task_args):
+    """Exposes 2D tasks for generic mapping functions safely avoiding partial closures."""
     return minimize_point_2d(*task_args)
 
 def scan_parameter_parallel(m_global, param_name, start_val, sigma_guess, func, limits, param_names, output_dir, 
                             n_steps=40, use_n_points_internal=False, n_points_internal=100, scan_range_sigma=4.0, 
                             minuit_retries=3, use_log_scan=False, force_rigid_bounds=False, pool=None, num_cores=1):
-    
-    # [Fix #1: NoneType Boundary Crash]: Explicitly handle None limits for semi-bounded parameters
-    # to prevent TypeError when computing max() and min() against the dynamic sigma range.
+    """
+    Constructs distributed HPC tasks dynamically iterating bounds constraints and returns 
+    synthesized 1D profiling vectors. Features intelligent mesh refinements.
+    """
     if force_rigid_bounds and param_name in limits and limits[param_name][0] is not None and limits[param_name][1] is not None:
         scan_min, scan_max = limits[param_name][0], limits[param_name][1]
         print(f"  [1D Scan] Enforcing rigid bounds for {param_name}: [{scan_min}, {scan_max}]")
@@ -729,12 +763,11 @@ def scan_parameter_parallel(m_global, param_name, start_val, sigma_guess, func, 
 
 def scan_pair_parallel(m_global, param_x, param_y, limits, func, param_names, n_steps=20, 
                        scan_range_sigma=3.5, minuit_retries=3, force_rigid_bounds=False, pool=None, num_cores=1):
+    """Iterates a distributed two-dimensional mesh matrix computing profile isolines contour projections."""
     sigma_x = m_global.errors[param_x] if m_global.errors[param_x] > 0 else 0.1
     sigma_y = m_global.errors[param_y] if m_global.errors[param_y] > 0 else 0.1
     val_x, val_y = m_global.values[param_x], m_global.values[param_y]
     
-    # [Fix #1: NoneType Boundary Crash]: Explicitly handle None limits for semi-bounded parameters 
-    # when computing boundaries dynamically against estimated variance scales.
     if force_rigid_bounds and param_x in limits and limits[param_x][0] is not None and limits[param_x][1] is not None:
         min_x, max_x = limits[param_x][0], limits[param_x][1]
     else:
@@ -779,11 +812,9 @@ def scan_pair_parallel(m_global, param_x, param_y, limits, func, param_names, n_
     param_grid = [[params_list[i*n_steps + j] for j in range(n_steps)] for i in range(n_steps)]
     return x_grid, y_grid, Z, param_grid
 
-def _global_1d_repair_wrapper(task_args):
-    return minimize_point(*task_args)
-
 def repair_scan_outliers(x_scan, chi2_scan, param_histories, param_name, func, limits, param_names, global_errors, 
                          threshold=0.2, max_passes=10, use_simplex=True, minuit_retries=3, pool=None, num_cores=1):
+    """Scans computational array identifying artificial positive data jumps triggered by Minuit stalling and recalculates."""
     chi2_rep = chi2_scan.copy()
     for _ in range(max_passes):
         tasks, indices = [], []
@@ -816,6 +847,7 @@ def repair_scan_outliers(x_scan, chi2_scan, param_histories, param_name, func, l
 
 def repair_scan_continuity(x_scan, chi2_scan, param_histories, param_name, func, limits, param_names, global_errors, 
                            use_simplex=True, continuity_threshold=1.0, max_passes=5, minuit_retries=3, pool=None, num_cores=1):
+    """Verifies gradient transitions targeting localized unphysical numerical slope derivations for recalculation."""
     print(f"  [Continuity] Checking for slope discontinuities in {param_name} scan...")
     chi2_rep = chi2_scan.copy()
     for pass_idx in range(max_passes):
@@ -850,6 +882,7 @@ def repair_scan_continuity(x_scan, chi2_scan, param_histories, param_name, func,
 
 def repair_steep_gradients(x_scan, chi2_scan, param_histories, param_name, func, limits, param_names, global_errors, 
                            use_simplex=True, threshold=3.0, max_passes=5, minuit_retries=3, pool=None, num_cores=1):
+    """Repairs jagged structural edges ensuring physically continuous objective surfaces."""
     print(f"  [Gradient] Checking for steep gradients in {param_name} scan...")
     chi2_rep = chi2_scan.copy()
     for pass_idx in range(max_passes):
@@ -886,6 +919,7 @@ def _global_repair_wrapper(task_args):
 
 def repair_2d_scan_outliers(x_grid, y_grid, Z_chi2, param_grid, name_pair, func, limits, param_names, global_errors,
                             use_simplex=True, threshold=0.2, max_passes=100, minuit_retries=3, pool=None, num_cores=1):
+    """Maps nearest-neighbor evaluations tracing 2D anomalies to mathematically verify structural depressions."""
     Z_repaired = Z_chi2.copy()
     rows, cols = Z_repaired.shape
     for pass_idx in range(max_passes):
@@ -919,6 +953,7 @@ def repair_2d_scan_outliers(x_grid, y_grid, Z_chi2, param_grid, name_pair, func,
     return x_grid, y_grid, Z_repaired
 
 def calculate_intervals(x_scan, dchi2, name, thresholds, merge_gaps=True, gap_tolerance=0.1, enforce_monotonicity=False):
+    """Locates specific zero-roots across splines deriving formal frequentist uncertainty exclusions."""
     if enforce_monotonicity:
         print(f"  [Intervals] Enforcing monotonicity on {name} arrays before root extraction.")
         sort_idx = np.argsort(x_scan)
@@ -965,6 +1000,7 @@ def calculate_intervals(x_scan, dchi2, name, thresholds, merge_gaps=True, gap_to
 # ==============================================================================
 
 def plot_1d_analysis(output_dir, param_names, confidence_cfg, global_min_chi2):
+    """Synthesizes isolated JSON payload outputs formulating a consolidated 1D multi-panel graphic."""
     if not param_names: return
     rows = (len(param_names) + 1) // 2
     fig, axes = plt.subplots(rows, 2, figsize=(10, 4*rows))
@@ -988,7 +1024,7 @@ def plot_1d_analysis(output_dir, param_names, confidence_cfg, global_min_chi2):
         axes[i].set_xlabel(get_label(p))
         axes[i].set_title(format_title_stats(p, freq_results))
         axes[i].set_ylim(0, 15)
-        if i == 0: axes[i].legend(loc='upper right')
+        if i == 0 and axes[i].get_legend_handles_labels()[0]: axes[i].legend(loc='upper right')
         
     for j in range(i+1, len(axes)): axes[j].axis('off')
     plt.tight_layout()
@@ -996,6 +1032,7 @@ def plot_1d_analysis(output_dir, param_names, confidence_cfg, global_min_chi2):
     plt.savefig(os.path.join(output_dir, "plots", "frequentist_summary_1d.pdf"))
 
 def plot_2d_analysis(output_dir, param_names, confidence_cfg, global_min_chi2, scan_settings):
+    """Produces the definitive multidimensional corner-plot grid illustrating topological phase combinations."""
     if not param_names: return
     n_params = len(param_names)
     info_dir = os.path.join(output_dir, 'info')
@@ -1046,7 +1083,6 @@ def plot_2d_analysis(output_dir, param_names, confidence_cfg, global_min_chi2, s
                             y_1d = np.nan_to_num(marg_1d - global_min_chi2, nan=1e9)
                             y_1d[y_1d < 0] = 0
                             
-                            # [Fix #3: Jagged Marginalized Ghosts]: Smooths out low-resolution projected 2D surfaces using a PCHIP monotonic spline.
                             smooth_marginalized = scan_settings.get("smooth_marginalized_1d", False)
                             if smooth_marginalized and len(x_1d) > 3:
                                 print(f"  [Plotting] Smoothing marginalized 1D curve for {param_x}.")
@@ -1095,6 +1131,7 @@ def plot_2d_analysis(output_dir, param_names, confidence_cfg, global_min_chi2, s
                     levels = [confidence_cfg.get(l, def_v) for l, def_v in [("1sigma_2d", 2.30), ("2sigma_2d", 4.61), ("3sigma_2d", 11.83)] if l.split('_')[0] in confidence_cfg] or [2.30, 4.61, 11.83]
                     colors = ['#1f77b4', '#ff7f0e', '#2ca02c'][:len(levels)]
                     
+                    X, Y = np.meshgrid(x_grid, y_grid)
                     ax.pcolormesh(X, Y, Z_smooth, shading='auto', cmap='viridis_r', vmin=0, vmax=max(levels)*1.2)
                     try:
                         ax.contourf(X, Y, Z_smooth, levels=[0]+levels, colors=colors, alpha=0.3)
@@ -1114,6 +1151,7 @@ def plot_2d_analysis(output_dir, param_names, confidence_cfg, global_min_chi2, s
 # ==============================================================================
 
 def run_2d_analysis(args, m, param_names, limits, func, global_min_chi2, scan_settings, confidence_cfg, repair_settings, pool=None, num_cores=1):
+    """Executes the secondary operational branch routing parameter permutations across coupled multidimensional limits."""
     print("\n" + "="*60 + "\nSTARTING 2D PROFILE SCANS\n" + "="*60)
     surfaces_2d = {}
     use_checkpointing = scan_settings.get("use_checkpointing", True)
@@ -1131,8 +1169,6 @@ def run_2d_analysis(args, m, param_names, limits, func, global_min_chi2, scan_se
                 info_path = os.path.join(args.output_dir, 'info', f"profile_2d_{param_x}_vs_{param_y}.json")
                 checkpoint_loaded = False
                 
-                # [Fix #2: Corrupted Checkpoint Trap]: JSON loaders are wrapped in try-except statements. 
-                # If a cluster interrupts writing mid-save, the resulting malformed JSON is caught, deleted, and automatically recomputed.
                 if use_checkpointing and os.path.exists(info_path):
                     try:
                         with open(info_path, 'r') as f: data = json.load(f)
@@ -1191,7 +1227,10 @@ def run_2d_analysis(args, m, param_names, limits, func, global_min_chi2, scan_se
                             for k_p, v_p in new_best_params.items():
                                 m.values[k_p] = v_p
 
-                Z_dchi2 = np.nan_to_num(Z_chi2 - global_min_chi2, nan=1e9)
+                norm_min_2d = min(global_min_chi2, np.nanmin(Z_chi2))
+                if np.isinf(global_min_chi2) and norm_min_2d < 1e5:
+                    print(f"  [Fix #2] Recovered valid 2D baseline minimum from grid: {norm_min_2d:.4f}")
+                Z_dchi2 = np.nan_to_num(Z_chi2 - norm_min_2d, nan=1e9)
                 Z_dchi2[Z_dchi2 < 0] = 0
                 surfaces_2d[f"{param_y}_vs_{param_x}"] = {"x": x_grid.tolist(), "y": y_grid.tolist(), "z": Z_dchi2.tolist()}
                 
@@ -1199,19 +1238,76 @@ def run_2d_analysis(args, m, param_names, limits, func, global_min_chi2, scan_se
     plot_2d_analysis(args.output_dir, scan_param_names, confidence_cfg, global_min_chi2, scan_settings)
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--output_dir", type=str, required=True)
-    parser.add_argument("--config_file", type=str, required=True)
-    parser.add_argument("--num_cores", type=int, default=None)
-    parser.add_argument("--use_mcmc_warm_start", action="store_true")
-    parser.add_argument("--asimov", action="store_true", help="Generate and fit against expected Asimov mock data instead of real data.")
+    """Initializes sequence parsing logic invoking systematic execution pathways across operational topologies."""
+    parser = argparse.ArgumentParser(
+        description="Generic Frequentist Profile Likelihood Scanner.\n\n"
+                    "Order of Priority for Execution Parameters:\n"
+                    "1. CLI Arguments (Highest Priority)\n"
+                    "2. JSON Configuration File\n"
+                    "3. Default Fallbacks (Lowest Priority)\n",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    
+    parser.add_argument("--output_dir", type=str, default="./results", help="Target directory path for generated graphics and serialized JSON outputs.")
+    parser.add_argument("--config_file", type=str, default="", help="Active target configuration payload defining empirical variables.")
+    parser.add_argument("--use_mcmc_warm_start", action="store_true", help="Invokes Emcee randomized basin evaluation prior to gradient profiling sequences.")
+    parser.add_argument("--asimov", action="store_true", help="Configures baseline validation payload assessing exact null-hypothesis physics sensitivity boundaries.")
+    
+    scan_group = parser.add_argument_group('Scan Settings (CLI Overrides)')
+    for k, v in DEFAULT_SCAN_SETTINGS.items():
+        if isinstance(v, bool):
+            scan_group.add_argument(f"--{k}", action='store_true', default=v, help=f"Enable {k} (Default: {v})")
+            scan_group.add_argument(f"--no_{k}", dest=k, action='store_false', help=f"Disable {k}")
+        elif isinstance(v, (int, float, str)):
+            scan_group.add_argument(f"--{k}", type=type(v), default=v, help=f"Default numerical value: {v}")
+        elif isinstance(v, list):
+            scan_group.add_argument(f"--{k}", nargs='*', type=str, default=v, help=f"List sequence parameter. Default: {v}")
+
+    repair_group = parser.add_argument_group('Repair Settings (CLI Overrides)')
+    for k, v in DEFAULT_REPAIR_SETTINGS.items():
+        if isinstance(v, bool):
+            repair_group.add_argument(f"--{k}", action='store_true', default=v, help=f"Enable {k} (Default: {v})")
+            repair_group.add_argument(f"--no_{k}", dest=k, action='store_false', help=f"Disable {k}")
+        elif isinstance(v, (int, float, str)):
+            repair_group.add_argument(f"--{k}", type=type(v), default=v, help=f"Default numerical value: {v}")
+
     args = parser.parse_args()
 
     config = load_config(args.config_file)
-    os.makedirs(args.output_dir, exist_ok=True)
+    if not config.get("output_dir"): 
+        config["output_dir"] = args.output_dir
+    os.makedirs(config["output_dir"], exist_ok=True)
     
+    cli_provided_args = {arg.lstrip('-').split('=')[0] for arg in sys.argv[1:] if arg.startswith('--')}
+    cli_keys = set()
+    for k in cli_provided_args:
+        if k.startswith('no_') and k[3:] in DEFAULT_SCAN_SETTINGS.keys() | DEFAULT_REPAIR_SETTINGS.keys():
+            cli_keys.add(k[3:])
+        else:
+            cli_keys.add(k)
+            
+    if "scan_settings" not in config: config["scan_settings"] = {}
+    for k, def_val in DEFAULT_SCAN_SETTINGS.items():
+        cli_val = getattr(args, k)
+        if k in cli_keys:
+            if k in config["scan_settings"] and config["scan_settings"][k] != cli_val:
+                print(f"  [CLI Override] Executing override on 'scan_settings' element '{k}' modifying {config['scan_settings'][k]} down to {cli_val}.")
+            config["scan_settings"][k] = cli_val
+        elif k not in config["scan_settings"]:
+            config["scan_settings"][k] = def_val
+
+    if "repair_settings" not in config: config["repair_settings"] = {}
+    for k, def_val in DEFAULT_REPAIR_SETTINGS.items():
+        cli_val = getattr(args, k)
+        if k in cli_keys:
+            if k in config["repair_settings"] and config["repair_settings"][k] != cli_val:
+                print(f"  [CLI Override] Executing override on 'repair_settings' element '{k}' modifying {config['repair_settings'][k]} down to {cli_val}.")
+            config["repair_settings"][k] = cli_val
+        elif k not in config["repair_settings"]:
+            config["repair_settings"][k] = def_val
+            
     scan_settings = config.get("scan_settings", {})
-    req_cores = args.num_cores or scan_settings.get("num_cores", cpu_count())
+    req_cores = scan_settings.get("num_cores", cpu_count())
     actual_cores = len(os.sched_getaffinity(0)) if hasattr(os, 'sched_getaffinity') else int(os.environ.get("SLURM_CPUS_PER_TASK", cpu_count()))
     num_cores = max(1, min(req_cores, actual_cores))
     print(f"\nUsing up to {num_cores} CPU core(s) (Requested: {req_cores}, Available: {actual_cores}).")
@@ -1222,7 +1318,7 @@ def main():
     if args.asimov:
         asimov_injections = config.get("asimov_injections", {})
         if asimov_injections:
-            print(f"\n  [Asimov] Initialization override: Forcing start values to mock data baseline {asimov_injections}")
+            print(f"\n  [Asimov] Initialization override: Forcing start values to mock baseline {asimov_injections}")
             start_vals.update({k: v for k, v in asimov_injections.items() if k in param_names})
             
     func = GenericLikelihoodWrapper(config, param_names, asimov=args.asimov)
@@ -1252,12 +1348,11 @@ def main():
         if not scan_settings.get("skip_sanity_check", False):
             perform_sanity_check(func, m)
         
-        # --- 1D Scans ---
         use_checkpointing = scan_settings.get("use_checkpointing", True)
         repair_cfg = config.get("repair_settings", {})
         
         final_results_dict = {}
-        freq_results_path = os.path.join(args.output_dir, 'info', 'frequentist_results.json')
+        freq_results_path = os.path.join(config["output_dir"], 'info', 'frequentist_results.json')
         if use_checkpointing and os.path.exists(freq_results_path):
             try:
                 with open(freq_results_path, 'r') as f:
@@ -1273,12 +1368,10 @@ def main():
             
             for p in scan_params_1d:
                 print(f"\nScanning {p}...")
-                info_path = os.path.join(args.output_dir, 'info', f"profile_1d_{p}.json")
+                info_path = os.path.join(config["output_dir"], 'info', f"profile_1d_{p}.json")
                 use_log_scan = p in log_params
                 checkpoint_loaded = False
                 
-                # [Fix #2: Corrupted Checkpoint Trap]: JSON loaders are wrapped in try-except statements. 
-                # If a cluster interrupts writing mid-save, the resulting malformed JSON is caught, deleted, and automatically recomputed.
                 if use_checkpointing and os.path.exists(info_path):
                     try:
                         with open(info_path, 'r') as f: data = json.load(f)
@@ -1292,7 +1385,7 @@ def main():
                         except OSError: pass
                 
                 if not checkpoint_loaded:
-                    x, y, hist = scan_parameter_parallel(m, p, m.values[p], max(m.errors[p], 0.1), func, limits, param_names, args.output_dir, 
+                    x, y, hist = scan_parameter_parallel(m, p, m.values[p], max(m.errors[p], 0.1), func, limits, param_names, config["output_dir"], 
                                                          n_steps=scan_settings.get("n_steps", 40), use_n_points_internal=scan_settings.get("use_n_points_internal", False),
                                                          n_points_internal=scan_settings.get("n_points_internal", 100), scan_range_sigma=scan_settings.get("scan_range_sigma", 4.0),
                                                          use_log_scan=use_log_scan, force_rigid_bounds=scan_settings.get("force_rigid_bounds", False), pool=pool, num_cores=num_cores)
@@ -1308,7 +1401,7 @@ def main():
                                                       threshold=repair_cfg.get("gradient_threshold", 50.0), max_passes=repair_cfg.get("max_repair_passes", 10),
                                                       use_simplex=repair_cfg.get("use_simplex_polish", True), minuit_retries=repair_cfg.get("minuit_retries", 3), pool=pool, num_cores=num_cores)
                     
-                    os.makedirs(os.path.join(args.output_dir, 'info'), exist_ok=True)
+                    os.makedirs(os.path.join(config["output_dir"], 'info'), exist_ok=True)
                     
                     save_nuisance_evolution = scan_settings.get("save_nuisance_evolution", False)
                     json_payload = {"x": x.tolist(), "y": y.tolist(), "param_hist": hist}
@@ -1331,7 +1424,10 @@ def main():
                         if new_best_params:
                             for k_p, v_p in new_best_params.items(): m.values[k_p] = v_p
                 
-                dchi2 = np.nan_to_num(y - global_min_chi2, nan=1e9)
+                norm_min = min(global_min_chi2, np.nanmin(y))
+                if np.isinf(global_min_chi2) and norm_min < 1e5:
+                    print(f"  [Fix #1] Recovered valid 1D baseline minimum from grid: {norm_min:.4f}")
+                dchi2 = np.nan_to_num(y - norm_min, nan=1e9)
                 dchi2[dchi2 < 0] = 0
                 
                 final_results_dict[p] = calculate_intervals(
@@ -1342,10 +1438,10 @@ def main():
                     enforce_monotonicity=scan_settings.get("enforce_spline_monotonicity", False)
                 )
                 
-                with open(os.path.join(args.output_dir, 'info', 'frequentist_results.json'), 'w') as f: 
+                with open(os.path.join(config["output_dir"], 'info', 'frequentist_results.json'), 'w') as f: 
                     json.dump(final_results_dict, f, indent=4)
                 
-            plot_1d_analysis(args.output_dir, scan_params_1d, config.get("confidence_thresholds", {}), global_min_chi2)
+            plot_1d_analysis(config["output_dir"], scan_params_1d, config.get("confidence_thresholds", {}), global_min_chi2)
         
         # --- 2D Scans ---
         if scan_settings.get("scan_2d", False) or scan_2d_only:
