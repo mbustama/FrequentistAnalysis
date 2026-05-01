@@ -1,5 +1,8 @@
 # Frequentist Profile Likelihood Scanner
 
+![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)
+![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
+
 A highly optimized, physics-agnostic, and massively parallelized framework for extracting multi-parameter frequentist confidence intervals and topological profile likelihood contours. 
 
 This codebase minimizes $-2 \ln \mathcal{L}$ (or $\Delta\chi^2$) objective functions, mapping highly complex multi-dimensional parameter spaces. Built for High-Performance Computing (HPC) environments (but executable also locally), it ensures robust mathematical convergence even in the presence of steep gradients and disconnected topological phase spaces.
@@ -42,6 +45,7 @@ This codebase minimizes $-2 \ln \mathcal{L}$ (or $\Delta\chi^2$) objective funct
   * [Avoiding Local Minimum Traps](#avoiding-local-minimum-traps)
   * [Asimov Sensitivities](#asimov-sensitivities)
   * [Changing the number of cores](#changing-the-number-of-cores)
+* [Troubleshooting & FAQ](#troubleshooting--faq)
 * [Authorship and License](#authorship-and-license)
 
 ---
@@ -69,12 +73,20 @@ $$
 
 The scanner will attempt to find the optimal global fit against an observation of `10.0`, while respecting the bounds and external 2D prior penalties mapped in `config/myconfig.json`.
 
+*Benchmark:* On a standard modern laptop utilizing 4 cores, this default 3-parameter global minimization and profiling sequence completes in approximately ~15 seconds.
+
 ### 4. Outputs
 All execution artifacts are saved to the directory defined by the `--output_dir` flag (defaults to `results/` if unassigned).
 * **`results/info/`**: Contains raw JSON coordinate arrays for every 1D and 2D parameter scan, as well as `frequentist_results.json` containing the extracted $1\sigma$, $2\sigma$, and $3\sigma$ intervals.
-* **`results/plots/`**: Contains publication-ready `.pdf` graphics:
-  * `frequentist_summary_1d.pdf`: Multi-panel 1D $\Delta\chi^2$ plots.
-  * `frequentist_corner_2d.pdf`: Nested multi-dimensional contour matrices mapping phase spaces.
+* **`results/plots/`**: Contains publication-ready `.pdf` graphics.
+
+*(Note for GitHub display: While the code natively generates high-resolution `.pdf` files for publication, GitHub markdown does not render PDFs inline. To display your results in this README, simply convert your PDFs to `.png` or `.jpg`, place them in an `assets/` folder in your repository root, and link them as shown below).*
+
+**Example 1D Profiling Summary:**
+![1D Profile Summary](assets/frequentist_summary_1d.png)
+
+**Example 2D Contour Corner Plot:**
+![2D Corner Plot](assets/frequentist_corner_2d.png)
 
 ---
 
@@ -83,6 +95,7 @@ All execution artifacts are saved to the directory defined by the `--output_dir`
 The framework is strictly modularized into functional namespaces.
 ```text
 FrequentistAnalysis/
+├── assets/                      # Repository images and converted plots for README
 ├── config/
 │   └── myconfig.json            # Example configuration payload
 ├── results/                     # Generated automatically during execution
@@ -409,6 +422,22 @@ By default, the code requests 64 cores, but automatically checks hardware limits
 python -m src.main --config_file myconfig.json --num_cores 16
 ```
 **Internal Adaptation & SLURM:** The framework includes built-in safeguards to prevent requesting more cores than the hardware or cluster scheduler actually allows. Internally, the code checks the OS affinity mask (`os.sched_getaffinity`) and evaluates SLURM environment variables (like `$SLURM_CPUS_PER_TASK`). It then takes the *minimum* between your requested `--num_cores` and the actual hardware/SLURM limits available to the job. This ensures that your runs won't crash or be penalized by the cluster for attempting to spawn threads outside of your allocated resources.
+
+---
+
+## Troubleshooting & FAQ
+
+**1. Numba Compilation Errors (`TypingError`)**
+If your custom physics kernel crashes with a Numba `TypingError`, it means you are using unsupported Python types inside the `@njit` decorated function. 
+* *Fix:* Ensure your `compute_user_model_single` function relies *strictly* on raw NumPy arrays and standard math operations. Do not instantiate external Python classes, lists, or dictionaries inside this block.
+
+**2. Multiprocessing Freezes on macOS**
+Python's multiprocessing behaves differently across operating systems. Linux defaults to `fork` (which copies memory state), while macOS/Windows default to `spawn` (which spins up fresh interpreters). 
+* *Fix:* The framework automatically forces the `spawn` method in `src/main.py` to ensure cross-platform stability and prevent macOS memory deadlocks. If you experience hanging processes on cluster nodes, ensure your environment variables are correctly suppressing multithreading (OpenBLAS/MKL) as handled at the top of `src/main.py`.
+
+**3. Minuit "Migrad fails to converge"**
+If the scanner repeatedly prints warnings that global minimization failed, your parameter space is likely too chaotic or flat for initial gradient descents.
+* *Fix:* Pass the `--use_mcmc_warm_start` flag to let `emcee` map the global basin stochastically before letting Minuit finish the job.
 
 ---
 
