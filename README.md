@@ -80,8 +80,6 @@ All execution artifacts are saved to the directory defined by the `--output_dir`
 * **`results/info/`**: Contains raw JSON coordinate arrays for every 1D and 2D parameter scan, as well as `frequentist_results.json` containing the extracted $1\sigma$, $2\sigma$, and $3\sigma$ intervals.
 * **`results/plots/`**: Contains publication-ready `.pdf` graphics.
 
-*(Note for GitHub display: While the code natively generates high-resolution `.pdf` files for publication, GitHub markdown does not render PDFs inline. To display your results in this README, simply convert your PDFs to `.png` or `.jpg`, place them in an `assets/` folder in your repository root, and link them as shown below).*
-
 **Example 1D Profiling Summary:**
 ![1D Profile Summary](assets/frequentist_summary_1d.png)
 
