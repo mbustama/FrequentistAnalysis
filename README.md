@@ -32,7 +32,7 @@ python -m src.main -h
 
 ### 3. The Built-In Example
 The framework ships with a lightweight, 3-parameter physics kernel located in `src/physics/kernel.py`:
-$ f(\alpha, \beta, \gamma) = \alpha^2 + 2\beta - \sin(\gamma) + \sum(\text{static\_data}) $
+$f(\alpha, \beta, \gamma) = \alpha^2 + 2\beta - \sin(\gamma) + \sum(\text{static\_data})$
 The scanner will attempt to find the optimal global fit against an observation of `10.0`, while respecting the bounds and external 2D prior penalties mapped in `config/myconfig.json`.
 
 ### 4. Outputs
