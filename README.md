@@ -57,7 +57,7 @@ We highly recommend running this framework inside an isolated virtual environmen
 
 First, clone the repository and navigate into the root directory:
 ```bash
-git clone [https://github.com/yourusername/FrequentistAnalysis.git](https://github.com/yourusername/FrequentistAnalysis.git)
+git clone [https://github.com/mbustama/FrequentistAnalysis](https://github.com/mbustama/FrequentistAnalysis)
 cd FrequentistAnalysis
 ```
 
