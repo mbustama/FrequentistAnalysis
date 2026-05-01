@@ -122,7 +122,7 @@ def run_2d_analysis(args, m, param_names, limits, func, global_min_chi2, scan_se
                 Z_dchi2[Z_dchi2 < 0] = 0
                 surfaces_2d[f"{param_y}_vs_{param_x}"] = {"x": x_grid.tolist(), "y": y_grid.tolist(), "z": Z_dchi2.tolist()}
                 
-    with open(os.path.join(args.output_dir, "profile_scan_2d_data.json"), 'w') as f: json.dump(surfaces_2d, f, indent=4)
+    with open(os.path.join(args.output_dir, 'info', "profile_scan_2d_data.json"), 'w') as f: json.dump(surfaces_2d, f, indent=4)
     plot_2d_analysis(args.output_dir, scan_param_names, confidence_cfg, global_min_chi2, scan_settings)
 
 def main():
@@ -166,6 +166,8 @@ def main():
     if not config.get("output_dir"): 
         config["output_dir"] = args.output_dir
     os.makedirs(config["output_dir"], exist_ok=True)
+
+    args.output_dir = config["output_dir"]
     
     # Establish precise user overrides circumventing fallback parameters 
     cli_provided_args = {arg.lstrip('-').split('=')[0] for arg in sys.argv[1:] if arg.startswith('--')}
