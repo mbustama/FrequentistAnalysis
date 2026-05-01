@@ -21,6 +21,7 @@ This codebase minimizes $-2 \ln \mathcal{L}$ (or $\Delta\chi^2$) objective funct
 
 ## Table of contents
 * [Salient Features](#salient-features)
+* [Installation & Environment Setup](#installation--environment-setup)
 * [Quick Start](#quick-start)
   * [1. Execution](#1-execution)
   * [2. Help Menu & Flags](#2-help-menu--flags)
@@ -48,6 +49,39 @@ This codebase minimizes $-2 \ln \mathcal{L}$ (or $\Delta\chi^2$) objective funct
 * [Troubleshooting & FAQ](#troubleshooting--faq)
 * [Authorship and License](#authorship-and-license)
 
+---
+
+## Installation & Environment Setup
+
+We highly recommend running this framework inside an isolated virtual environment to prevent dependency conflicts, especially on shared HPC clusters. You can easily set this up using either `conda` or standard Python `venv`.
+
+First, clone the repository and navigate into the root directory:
+```bash
+git clone [https://github.com/yourusername/FrequentistAnalysis.git](https://github.com/yourusername/FrequentistAnalysis.git)
+cd FrequentistAnalysis
+```
+
+### Option A: Conda (Recommended)
+1. Create a new conda environment (Python 3.8+ is supported):
+```bash
+conda create -n freq_scanner python=3.10
+conda activate freq_scanner
+```
+2. Install all core and optional dependencies using the provided requirements file:
+```bash
+pip install -r requirements.txt
+```
+
+### Option B: Standard Python (venv)
+1. Create and activate a standard virtual environment:
+```bash
+python -m venv freq_scanner_env
+source freq_scanner_env/bin/activate  # On Windows use: freq_scanner_env\Scripts\activate
+```
+2. Install the required packages:
+```bash
+pip install -r requirements.txt
+```
 ---
 
 ## Quick Start
@@ -118,7 +152,8 @@ FrequentistAnalysis/
 │       ├── __init__.py
 │       ├── statistics.py        # Spline-root extraction for confidence intervals
 │       └── plotting.py          # matplotlib 1D/2D contour generation routines
-└── README.md
+├── README.md
+└── requirements.text			 # Requirements to create a conda environment
 ```
 
 ---
