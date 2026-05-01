@@ -31,7 +31,7 @@ This codebase minimizes $-2 \ln \mathcal{L}$ (or $\Delta\chi^2$) objective funct
 * [The Analysis Workflow](#the-analysis-workflow)
   * [Likelihood Function](#likelihood-function)
   * [Repairs](#repairs)
-  * [Output Files and Plotting](#output-files-and-plots)
+  * [Output Files and Plots](#output-files-and-plots)
 * [Adapting the code to your project](#adapting-the-code-to-your-project)
 * [Setting Parameters](#setting-parameters)
 * [The Config File](#the-config-file)
